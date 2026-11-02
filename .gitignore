@@ -1,0 +1,11 @@
+# Godot
+.godot/
+*.translation
+export_presets.cfg
+export/
+build/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
