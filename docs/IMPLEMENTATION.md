@@ -40,8 +40,8 @@ because voters will click through many entries.
 
 Resolve these early; each affects later work.
 
-- [ ] **Soft ace:** keep hard ace = 1 (current) or add 1/11 with a defined B-side rule
-- [ ] **Mid-hand shift:** allowed now, but the sim only covered shift at deal time. Re-sim or restrict
+- [x] **Soft ace:** keep hard ace = 1; B follows the law mapping.
+- [x] **Mid-hand shift:** keep allowed; fight simulation now exercises shifts after hits.
 - [ ] **Deck:** infinite-style reshuffle per fight (current) vs. finite shoe that players can learn
 - [ ] **`SHIFT_FORCES_DRAW` toggle:** try it if charges alone feel too weak
 - [ ] **Win condition per fight:** "4 of 7 rounds" is a placeholder. Alternatives: score target, chips, HP
@@ -51,13 +51,13 @@ Resolve these early; each affects later work.
 
 Goal: one round produces one tense decision.
 
-- [ ] Playtest by hand across all three laws; note when shift feels free or useless
-- [ ] Tune `start_charges`, `max_charges`, `win_refund`, `forced_rounds`
-- [ ] Settle the soft-ace and mid-hand-shift decisions above
-- [ ] Explain a disabled Shift button (no charge / would bust / already used)
-- [ ] Show the other realm's total clearly, and what a shift would do before committing
-- [ ] Shift animation (screen wipe or palette swap) and a placeholder sound
-- [ ] Extend `tests/run_tests.gd` for any rule change
+- [ ] Playtest by hand across all three laws; note when shift feels free or useless (human playtest pending; automated UI smoke covers all laws)
+- [x] Tune `start_charges`, `max_charges`, `win_refund`, `forced_rounds`
+- [x] Settle the soft-ace and mid-hand-shift decisions above
+- [x] Explain a disabled Shift button (no charge / would bust / already used)
+- [x] Show the other realm's total clearly, and what a shift would do before committing
+- [x] Shift animation (screen wipe or palette swap) and a placeholder sound
+- [x] Extend `tests/run_tests.gd` for any rule change
 
 ## Week 2 — run structure (to 15 Nov)
 

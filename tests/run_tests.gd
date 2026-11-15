@@ -16,6 +16,8 @@ func _initialize() -> void:
 	test_shift_changes_resolution_realm()
 	test_fight_charges()
 	test_forced_round()
+	test_shift_feedback()
+	test_start_budget()
 	print("%d checks, %d failed" % [_checks, _failures])
 	quit(_failures)
 
@@ -117,3 +119,34 @@ func test_forced_round() -> void:
 	check(r.realm == Realm.B and r.forced, "forced round starts in B")
 	check(r.shifts_used == 0, "forced flip is not a player shift")
 	check(f.charges == f.start_charges, "forced flip costs nothing")
+
+
+func test_shift_feedback() -> void:
+	var f := Fight.new(Law.mirror(), stack([5, 10, 5, 7, 5]))
+	var r := f.start_round()
+	check(r.shift_block_reason(0) == "No charges", "empty charge feedback")
+	r.hit()
+	check(r.player_total() == 15, "hit before shift")
+	check(f.shift(), "mid-hand shift allowed")
+	check(r.player_total() == 18, "mid-hand total changes")
+	check(r.shift_block_reason(1) == "Already used this round", "used feedback")
+	check(f.charges == 1, "mid-hand shift spends exactly one")
+	check(not f.shift() and f.charges == 1, "rejected shift costs nothing")
+	r.stand()
+	check(r.shift_block_reason(1) == "Round over", "resolved feedback")
+	var bust := RoundState.new(Law.mirror(), stack([1, 5, 1, 5, 1]))
+	bust.hit()
+	check(bust.shift_block_reason(1) == "Would bust", "bust feedback")
+	for law in Law.all():
+		var ace := Card.new(1, 0)
+		check(ace.value_in(law, Realm.A) == 1, "hard ace in " + law.title)
+
+func test_start_budget() -> void:
+	var f := Fight.new(Law.mirror(), stack([10, 10, 10, 7]))
+	f.start_charges = 1
+	f.start_round()
+	check(f.charges == 1, "configured start budget applied at first deal")
+	f.stand()
+	check(f.charges == 2, "unshifted win restores configured budget")
+	f.stand()
+	check(f.charges == 2, "settlement cannot refund twice")

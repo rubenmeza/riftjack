@@ -68,3 +68,50 @@ Caveats: shift tested only at deal time, simple stand thresholds, infinite deck.
 4. Tutorial, balance, submit before the deadline.
 
 Task-level checklist, open decisions and cut list: [IMPLEMENTATION.md](IMPLEMENTATION.md).
+
+
+## Week 1 decisions and validation (14 Nov 2026)
+
+Keep hard aces: A is always 1, B uses the law (Mirror 10, Rot3 4,
+Void 1). Keep one voluntary shift at any time before standing or busting,
+including after a hit. The preview exposes only the dealer upcard, never the
+hole card. A shift also forfeits the unshifted-win refund.
+
+Retain start 2, cap 3, refund 1, forced rounds 3 and 6 after comparing six
+configurations. The first-deal initialization now honors configured
+`start_charges`; previously changing that knob after construction did nothing.
+
+Godot 4.7.2, `tools/sim.gd`: seed 7, 10,000 fresh-deck rounds per law/realm,
+hit below 16, push worth half a win. Observed A/B scores: Mirror .454/.454,
+Rot3 .455/.441, Void .459/.448. These are smoke-test scores, not the
+earlier best-world estimates above.
+
+Fight experiment: seed 71 restarted per configuration, 1,000 fights per row,
+real charge accounting and reshuffles. Policy shifts when legal if the other
+total is at least 16 and greater than the current total; otherwise hits below
+16 and stands. It uses no hole-card information. Configuration columns below
+vary one setting from the retained defaults.
+
+| Law | Default | Start 1 | Start 3 | Cap 2 | Refund 0 | No forced rounds |
+|---|---:|---:|---:|---:|---:|---:|
+| Mirror | 416 | 401 | 422 | 410 | 397 | 397 |
+| Rot3 | 348 | 346 | 348 | 345 | 336 | 335 |
+| Void | 352 | 352 | 352 | 352 | 352 | 317 |
+
+Values are fights won out of 1,000, not round win percentages. Default
+mid-hand shifts: Mirror 1,050 of 1,797 shifts; Rot3 819 of 1,624;
+Void 404 of 862. This verifies the policy exercises mid-hand decisions.
+Small differences are not evidence of statistical superiority; paths consume
+different draws after decisions diverge. The defaults retain room to save a
+charge without eliminating the refund incentive. No forced-draw rule added.
+
+Void needs human attention: B cannot increase a hand's total, so this policy
+only shifts back from forced B rounds. Its identical budget results do not
+show that shifting into B is useless; hitting safely in B is outside this
+policy's strategy. Mirror can turn a weak hand into a stand; Rot3 demands
+reading individual mappings. These are rule observations, not human feedback.
+
+Automated UI smoke exercises all three laws, shift previews, palette completion,
+disabled reasons, standing and advancing. Human feel, visual layout and audible
+sound quality still need an actual play session. The generated mono PCM shift
+chirp is original project audio; no third-party asset licence is required.

@@ -12,6 +12,7 @@ Implementation checklist: [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md)
 ```sh
 godot --path .            # play
 godot --headless --path . -s tests/run_tests.gd   # rule tests
+godot --headless --path . -s tests/ui_smoke.gd    # UI interaction smoke
 godot --headless --path . -s tools/sim.gd         # balance smoke test
 ```
 

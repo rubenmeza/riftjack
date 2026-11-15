@@ -23,6 +23,9 @@ var hit_btn: Button
 var stand_btn: Button
 var shift_btn: Button
 var next_btn: Button
+var shift_preview: Label
+var shift_sound: AudioStreamPlayer
+var palette_tween: Tween
 
 
 func _ready() -> void:
@@ -32,6 +35,10 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
+	shift_sound = AudioStreamPlayer.new()
+	shift_sound.stream = preload("res://assets/shift.wav")
+	shift_sound.volume_db = -12
+	add_child(shift_sound)
 	bg = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
@@ -76,7 +83,12 @@ func _build_ui() -> void:
 	player_row.add_theme_constant_override("separation", 10)
 	root.add_child(player_row)
 
+	shift_preview = _make_label(20)
+	shift_preview.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	root.add_child(shift_preview)
+
 	message = _make_label(22)
+	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(message)
 
 	var buttons := HBoxContainer.new()
@@ -121,8 +133,9 @@ func _on_stand() -> void:
 
 
 func _on_shift() -> void:
-	fight.shift()
-	_refresh()
+	if fight.shift():
+		shift_sound.play()
+		_refresh()
 
 
 func _on_next() -> void:
@@ -137,7 +150,10 @@ func _refresh() -> void:
 	var r := fight.current
 	var other := Realm.flip(r.realm)
 
-	bg.color = BG_A if r.realm == Realm.A else BG_B
+	if palette_tween:
+		palette_tween.kill()
+	palette_tween = create_tween()
+	palette_tween.tween_property(bg, "color", BG_A if r.realm == Realm.A else BG_B, 0.25)
 	law_label.text = "%s law:  %s" % [fight.law.title, fight.law.strip_text()]
 	stats_label.text = "Round %d/%d    Wins %d/%d    Shift charges %d/%d" % [
 		fight.round_index, fight.rounds_total, fight.wins, fight.wins_needed,
@@ -152,7 +168,7 @@ func _refresh() -> void:
 	else:
 		dealer_total.text = "Dealer shows — A: %d   B: %d" % [
 			r.dealer_visible_total(Realm.A), r.dealer_visible_total(Realm.B)]
-	player_total.text = "You — %s: %d    (%s: %d)" % [
+	player_total.text = "You — active %s: %d    |    other realm %s: %d" % [
 		Realm.name_of(r.realm), r.player_total(),
 		Realm.name_of(other), r.player.total(fight.law, other)]
 
@@ -161,14 +177,22 @@ func _refresh() -> void:
 	var playing := r.phase == RoundState.Phase.PLAYER
 	hit_btn.disabled = not playing
 	stand_btn.disabled = not playing
-	shift_btn.disabled = not fight.can_shift()
+	var reason := r.shift_block_reason(fight.charges)
+	shift_btn.disabled = not reason.is_empty()
+	shift_btn.tooltip_text = reason
+	shift_preview.text = "Shift to %s: your total %d → %d; dealer upcard %d → %d. Costs 1 charge; no win refund." % [
+		Realm.name_of(other), r.player_total(), r.player.total(fight.law, other),
+		r.dealer_visible_total(r.realm), r.dealer_visible_total(other)]
+	if not reason.is_empty():
+		shift_preview.text = "Shift unavailable: %s.  " % reason + shift_preview.text
+	shift_preview.visible = playing
 	next_btn.visible = not playing
 	next_btn.text = "Next round" if fight.status() == Fight.Status.ACTIVE else "New fight"
 
 
 func _message_text(r: RoundState) -> String:
 	if r.phase == RoundState.Phase.PLAYER:
-		var text := "Stand locks realm %s." % Realm.name_of(r.realm)
+		var text := "Aces = 1. Stand locks realm %s." % Realm.name_of(r.realm)
 		if r.forced:
 			text = "FORCED SHIFT — the table starts in B.  " + text
 		elif fight.next_round_forced():

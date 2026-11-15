@@ -50,10 +50,20 @@ func dealer_visible_total(in_realm: int) -> int:
 	return dealer.total(law, in_realm, 1)
 
 
+func shift_block_reason(charges: int) -> String:
+	if phase != Phase.PLAYER:
+		return "Round over"
+	if shifts_used >= MAX_SHIFTS:
+		return "Already used this round"
+	if charges <= 0:
+		return "No charges"
+	if player.total(law, Realm.flip(realm)) > TARGET:
+		return "Would bust"
+	return ""
+
+
 func can_shift(charges: int) -> bool:
-	if phase != Phase.PLAYER or shifts_used >= MAX_SHIFTS or charges <= 0:
-		return false
-	return player.total(law, Realm.flip(realm)) <= TARGET
+	return shift_block_reason(charges).is_empty()
 
 
 ## Flips the realm. The caller is responsible for paying the charge.

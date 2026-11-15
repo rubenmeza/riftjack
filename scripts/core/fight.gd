@@ -37,6 +37,8 @@ func start_round() -> RoundState:
 	assert(status() == Status.ACTIVE and _settled, "previous round still in progress")
 	if deck.auto_reshuffle and deck.cards.size() < Deck.RESHUFFLE_BELOW:
 		deck.shuffle()
+	if round_index == 0:
+		charges = mini(start_charges, max_charges)
 	round_index += 1
 	current = RoundState.new(law, deck, round_index in forced_rounds)
 	_settled = false
